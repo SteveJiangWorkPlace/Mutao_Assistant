@@ -6,7 +6,8 @@
       "Bash(npx create-vite@latest:*)",
       "Bash(npm:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
