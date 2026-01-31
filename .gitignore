@@ -50,3 +50,6 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 nul
+
+# Claude Code settings
+.claude/
