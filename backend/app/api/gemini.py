@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
+import os
 import google.generativeai as genai
 import json
 import asyncio
@@ -179,6 +180,11 @@ async def generate_stream_response(prompt: str, api_key: str, model_name: str, t
         # 强制使用gemini-2.5-pro模型
         forced_model_name = "gemini-2.5-pro"
         print(f"强制使用模型: {forced_model_name} (请求模型: {model_name})")
+
+        # 设置HTTP代理（用户端口7897）
+        os.environ['HTTP_PROXY'] = 'http://127.0.0.1:7897'
+        os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7897'
+        print(f"已设置代理: {os.environ['HTTP_PROXY']}")
 
         # 配置Gemini API
         genai.configure(api_key=api_key)
