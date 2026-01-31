@@ -4,7 +4,6 @@
 """
 import os
 import sys
-import subprocess
 
 def main():
     # 切换到backend目录
@@ -27,35 +26,17 @@ def main():
         print(f"当前目录内容: {os.listdir('.')}")
         print(f"app目录内容: {os.listdir('app') if os.path.exists('app') else 'app目录不存在'}")
         print(f"Python路径: {sys.path}")
-        # 尝试直接导入
-        try:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("app", "app/__init__.py")
-            if spec:
-                print("找到了app/__init__.py")
-            else:
-                print("未找到app/__init__.py")
-        except Exception as e2:
-            print(f"详细检查失败: {e2}")
         sys.exit(1)
 
     # 运行uvicorn
     port = os.environ.get('PORT', '8000')
-    cmd = [
-        sys.executable, '-m', 'uvicorn',
-        'app.main:app',
-        '--host', '0.0.0.0',
-        '--port', port
-    ]
 
-    print(f"启动命令: {' '.join(cmd)}")
-    sys.stdout.flush()
+    # 直接导入并运行
+    from uvicorn import run
+    from app.main import app
 
-    # 执行uvicorn
-    os.execvp(sys.executable, [sys.executable, '-m', 'uvicorn',
-                               'app.main:app',
-                               '--host', '0.0.0.0',
-                               '--port', port])
+    print(f"启动服务器在端口: {port}")
+    run(app, host='0.0.0.0', port=int(port))
 
 if __name__ == '__main__':
     main()
