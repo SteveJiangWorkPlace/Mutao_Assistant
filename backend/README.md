@@ -1,122 +1,146 @@
-# Mutao Assistant 后端API
+# Mutao Assistant - PS写作模块后端
 
-基于FastAPI的Mutao Assistant后端服务，处理Gemini API调用和流式响应。
+## 项目概述
+PS写作模块后端，基于FastAPI和Google Gemini 2.5 Pro开发。
 
 ## 功能特性
+- 分析学生课外经历，识别3个最匹配的细分领域
+- 深度行业调研，生成结构化分析报告
+- 交互式选择机制，用户可选择最匹配方向
+- 生成完整的5段式个人陈述（Personal Statement）
 
-- PS写作分析生成（流式/非流式）
-- 强制使用gemini-2.5-pro模型
-- 完整的Markdown清理功能
-- CORS支持前端跨域调用
-- 模块化设计，支持后续扩展其他工具
+## 技术栈
+- **后端框架**: FastAPI (Python 3.9+)
+- **AI模型**: Google Gemini 2.5 Pro
+- **部署**: Render
+- **数据格式**: JSON
 
-## API端点
+## 开发环境配置
 
-### 通用端点
-- `POST /api/gemini/generate` - 普通文本生成
-- `POST /api/gemini/stream` - 流式文本生成
+### 1. 安装Python 3.9+
+确保系统中已安装Python 3.9或更高版本。
 
-### PS写作专用端点
-- `POST /api/gemini/ps-write/generate` - PS写作分析（非流式）
-- `POST /api/gemini/ps-write/stream` - PS写作分析（流式）
-
-### 系统端点
-- `GET /` - API状态
-- `GET /health` - 健康检查
-- `GET /api/gemini/modules` - 可用模块列表
-
-## 请求参数
-
-### PS写作请求
-```json
-{
-  "school": "目标学校名称",
-  "major": "申请专业",
-  "courses": "相关课程信息",
-  "extracurricular": "课外经历",
-  "api_key": "Google Gemini API Key",
-  "model_name": "gemini-2.5-pro", // 强制使用此模型
-  "temperature": 0.7,
-  "max_output_tokens": 4000
-}
+### 2. 创建虚拟环境（Windows）
+```bash
+python -m venv venv
+venv\Scripts\activate
 ```
 
-## 本地开发
-
-1. 安装依赖：
+### 3. 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-2. 运行开发服务器：
+### 4. 配置环境变量
+复制`.env.example`为`.env`并填入实际值：
 ```bash
-python run.py
-# 或
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+cp .env.example .env
+# 编辑.env文件，填入Gemini API密钥
 ```
 
-3. API将运行在：http://localhost:8000
-
-4. 访问API文档：
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## 部署到Render
-
-1. 将backend目录推送到GitHub仓库
-
-2. 在Render.com创建新的Web Service
-
-3. 配置：
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-
-4. 环境变量：
-   - `PYTHON_VERSION`: 3.11.0
-
-## 前端配置
-
-前端需要设置环境变量：
-```
-VITE_API_BASE_URL=https://your-render-app.onrender.com
+### 5. 启动开发服务器
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
-开发环境可创建`.env.local`文件：
-```
-VITE_API_BASE_URL=http://localhost:8000
+### 6. 测试API
+```bash
+curl http://localhost:8001/api/health
 ```
 
 ## 项目结构
-
 ```
 backend/
 ├── app/
-│   ├── main.py              # FastAPI主应用
+│   ├── main.py              # FastAPI入口
 │   ├── api/
-│   │   ├── __init__.py      # API路由注册
-│   │   └── gemini.py        # Gemini API处理
+│   │   ├── __init__.py
+│   │   └── ps_write.py      # PS写作API端点
+│   ├── core/
+│   │   ├── config.py        # 配置管理
+│   │   └── security.py      # 安全功能
+│   ├── models/
+│   │   └── schemas.py       # Pydantic数据模型
+│   └── services/
+│       └── gemini.py        # Gemini服务封装
 ├── requirements.txt         # Python依赖
-├── run.py                  # 启动脚本
+├── .env.example            # 环境变量示例
 ├── render.yaml             # Render部署配置
-└── README.md              # 本文档
+└── README.md               # 项目说明
 ```
 
-## 后续扩展
+## API端点
 
-### 添加新模块
-1. 在`gemini.py`中添加新的提示词构建函数
-2. 添加对应的请求模型和端点
-3. 更新模块列表
+### 健康检查
+```
+GET /api/health
+```
 
-### 支持的模块
-- ✅ PS写作 (ps-write)
-- ⬜ PS修改 (ps-review)
-- ⬜ CV写作 (cv-write)
-- ⬜ RL写作 (rl-write)
+### PS写作API
+```
+GET /api/ps-write/test      # 测试端点
+```
+
+## 部署到Render
+
+### 1. 推送到GitHub仓库
+将代码推送到GitHub仓库。
+
+### 2. 在Render创建Web Service
+- 选择"New Web Service"
+- 连接GitHub仓库
+- 使用`render.yaml`配置自动部署
+
+### 3. 配置环境变量
+在Render Dashboard中设置环境变量：
+- `GEMINI_API_KEY`: 你的Gemini API密钥
+- `DEBUG`: false (生产环境)
+- `SESSION_TTL_MINUTES`: 30
+
+## 开发计划
+
+### 阶段1-2：基础框架（已完成）
+- 项目结构搭建
+- FastAPI核心框架
+- 环境配置管理
+
+### 阶段3-4：AI集成（待开发）
+- Gemini API集成
+- 提示词工程
+- 数据模型设计
+
+### 阶段5-6：核心功能（待开发）
+- 调研分析功能
+- 交互选择机制
+- 会话状态管理
+
+### 阶段7-8：完整实现（待开发）
+- 个人陈述生成
+- 测试优化
+- 生产部署
 
 ## 注意事项
 
-1. API Key由前端提供，后端不存储任何密钥
-2. 强制使用gemini-2.5-pro模型确保一致性
-3. 流式响应使用Server-Sent Events (SSE)
-4. 生产环境应配置CORS白名单而非允许所有来源
+1. **API密钥安全**: 永远不要将API密钥提交到版本控制
+2. **代理配置**: 本地开发可能需要配置HTTP代理
+3. **CORS设置**: 生产环境应限制允许的域名
+4. **错误处理**: 所有API端点都应包含适当的错误处理
+
+## 故障排除
+
+### 常见问题
+1. **导入错误**: 确保虚拟环境已激活且依赖已安装
+2. **端口占用**: 更改`--port`参数使用其他端口
+3. **API密钥无效**: 检查.env文件中的GEMINI_API_KEY
+4. **代理问题**: 检查本地代理服务是否运行
+
+### 日志查看
+启动时添加`--log-level debug`查看详细日志：
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001 --log-level debug
+```
+
+## 联系方式
+- **项目负责人**: [填写联系方式]
+- **技术支持**: [填写联系方式]
+- **问题反馈**: [填写GitHub Issues链接]

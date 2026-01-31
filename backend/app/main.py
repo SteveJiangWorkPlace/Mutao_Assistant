@@ -1,35 +1,68 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import google.generativeai as genai
-import asyncio
-from typing import Optional, Dict, Any
-import json
+from fastapi.responses import JSONResponse
+from datetime import datetime
 
-from .api import router as api_router
+from app.api import ps_write
 
-app = FastAPI(title="Mutao Assistant API", version="1.0.0")
+# 创建FastAPI应用
+app = FastAPI(
+    title="Mutao Assistant API",
+    description="PS写作工具后端API",
+    version="1.0.0"
+)
 
-# CORS配置
+# 自定义异常
+class GeminiAPIError(Exception):
+    """Gemini API调用异常"""
+    pass
+
+class InvalidAPIKeyError(Exception):
+    """无效API密钥异常"""
+    pass
+
+# 全局异常处理器
+@app.exception_handler(GeminiAPIError)
+async def gemini_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Gemini API错误: {str(exc)}"}
+    )
+
+@app.exception_handler(InvalidAPIKeyError)
+async def invalid_api_key_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=401,
+        content={"detail": f"API密钥无效: {str(exc)}"}
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+
+# 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 生产环境应该指定具体域名
+    allow_origins=["*"],  # 生产环境应限制域名
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 导入API路由
-app.include_router(api_router, prefix="/api")
+# 注册路由
+app.include_router(ps_write.router)
 
 @app.get("/")
 async def root():
-    return {"message": "Mutao Assistant API", "status": "running"}
+    return {"message": "Mutao Assistant API 运行中"}
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
-    return {"status": "healthy"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "1.0.0"
+    }

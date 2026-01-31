@@ -1,9 +1,0 @@
-
-> mutao-assistant@0.0.0 dev
-> vite --host 0.0.0.0 --port 5174
-
-
-  [32m[1mVITE[22m v4.5.14[39m  [2mready in [0m[1m525[22m[2m[0m ms[22m
-
-  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5174[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.10.4:[1m5174[22m/[39m
