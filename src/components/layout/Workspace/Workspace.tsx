@@ -109,7 +109,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
 注意：实际输出时不要使用**或*等格式符号，直接使用加粗和斜体文字（用户会在富文本环境中查看）。`
   }
 
-  const callGeminiAPI = async (prompt: string) => {
+  const callGeminiAPI = async () => {
     if (!apiKey) {
       throw new Error('请先在侧边栏输入Google API Key')
     }
@@ -180,7 +180,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
       const prompt = buildPrompt()
       console.log('调用Gemini API，提示词长度:', prompt.length)
 
-      const result = await callGeminiAPI(prompt)
+      const result = await callGeminiAPI()
       console.log('Gemini API响应:', result)
 
       setAnalysisResult(result)
@@ -241,7 +241,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
   // 临时记忆功能：保存工作流状态到localStorage
   const saveWorkflowState = () => {
-    const state = {
+    const state: WorkflowState = {
       workflowStep,
       researchOptions,
       selectedOptionId,
@@ -286,6 +286,8 @@ const Workspace: React.FC<WorkspaceProps> = ({
   }
 
   // 清空保存的状态
+  // @ts-ignore - Function is defined but not used currently
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const clearWorkflowState = () => {
     localStorage.removeItem('ps-write-workflow-v2')
     setWorkflowStep('input')
