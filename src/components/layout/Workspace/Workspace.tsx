@@ -121,7 +121,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
       const response = await fetch(`${apiBaseUrl}/api/gemini/ps-write/generate`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
         },
         body: JSON.stringify({
           school: schoolInfo.school,
@@ -185,6 +185,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
       setAnalysisResult(result)
       // 分析结果已保存，预览将自动更新
+      setWorkflowStep('research') // 进入调研结果显示阶段
 
       // 显示成功提示
       alert('分析生成成功！结果已显示在预览区域。')
@@ -331,6 +332,10 @@ ${'='.repeat(60)}\n`
       return text
     }
 
+    // 如果有分析结果，优先显示
+    if (analysisResult && analysisResult.trim()) {
+      return cleanMarkdown(analysisResult)
+    }
 
     switch (workflowStep) {
       case 'input':

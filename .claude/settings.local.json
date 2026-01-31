@@ -28,13 +28,11 @@
       "Bash(uvicorn:*)",
       "Bash(where claude-code)",
       "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\user-prompt-token-estimator.py\":*)",
-      "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\":*)"
+      "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\":*)",
+      "Bash(echo:*)",
+      "Bash(pip show:*)",
+      "Bash(xargs ls:*)"
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\"",
-    "padding": 2
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -49,5 +47,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\"",
+    "padding": 2
   }
 }

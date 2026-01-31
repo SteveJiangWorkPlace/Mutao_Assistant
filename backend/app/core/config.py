@@ -1,13 +1,10 @@
 import os
-from typing import Optional
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """应用配置"""
     # API配置
-    gemini_api_key: str
-    http_proxy: Optional[str] = None
-    https_proxy: Optional[str] = None
+    gemini_api_key: str  # 保留，但实际通过前端传递
 
     # 应用配置
     debug: bool = True

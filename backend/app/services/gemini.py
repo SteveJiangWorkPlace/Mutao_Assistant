@@ -1,43 +1,28 @@
 import google.generativeai as genai
-import os
 import asyncio
+import sys
 from typing import Optional
-import httpx
-from app.core.config import get_settings
 
 class GeminiService:
-    def __init__(self, api_key: str, use_proxy: bool = True):
+    def __init__(self, api_key: str):
         """
         初始化Gemini服务
 
         Args:
             api_key: Gemini API密钥
-            use_proxy: 是否使用代理（本地开发需要）
         """
         self.api_key = api_key
 
-        # 配置代理（本地开发）
-        if use_proxy:
-            settings = get_settings()
-            if settings.http_proxy:
-                os.environ['HTTP_PROXY'] = settings.http_proxy
-                os.environ['HTTPS_PROXY'] = settings.https_proxy or settings.http_proxy
-                # 为httpx配置代理
-                self.proxies = {
-                    'http://': settings.http_proxy,
-                    'https://': settings.https_proxy or settings.http_proxy
-                }
-            else:
-                self.proxies = None
-        else:
-            self.proxies = None
-
         # 配置Gemini
-        genai.configure(api_key=api_key, transport='rest')
+        sys.stderr.write(f"[DEBUG] 配置genai，api_key长度: {len(api_key)}\n")
+        genai.configure(api_key=api_key)
+        sys.stderr.write("[DEBUG] genai.configure完成\n")
 
         # 使用指定的模型
-        self.model_name = 'gemini-2.0-flash-exp'  # 可以使用gemini-2.5-pro，但需要API权限
+        self.model_name = 'gemini-2.5-pro'  # 强制使用2.5-pro模型，需要API权限
+        sys.stderr.write(f"[DEBUG] GeminiService初始化，模型名称: {self.model_name}\n")
         self.model = genai.GenerativeModel(self.model_name)
+        sys.stderr.write(f"[DEBUG] GenerativeModel创建成功，模型: {self.model_name}\n")
 
         # 重试配置
         self.max_retries = 3
@@ -58,13 +43,17 @@ class GeminiService:
             Exception: 所有重试都失败后抛出异常
         """
         max_retries = max_retries or self.max_retries
+        sys.stderr.write(f"[DEBUG] generate_content_with_retry调用，模型: {self.model_name}, 尝试次数: {max_retries}\n")
 
         for attempt in range(max_retries + 1):
             try:
+                sys.stderr.write(f"[DEBUG] 尝试 {attempt+1}/{max_retries+1}: 调用generate_content_async\n")
                 # 使用异步生成内容
                 response = await self.model.generate_content_async(prompt)
+                sys.stderr.write(f"[DEBUG] 生成成功，响应长度: {len(response.text)}\n")
                 return response.text
             except Exception as e:
+                sys.stderr.write(f"[DEBUG] 尝试 {attempt+1} 失败: {type(e).__name__}: {str(e)}\n")
                 if attempt == max_retries:
                     raise Exception(f"Gemini API调用失败，重试{max_retries}次后仍失败: {str(e)}")
 
@@ -80,8 +69,10 @@ class GeminiService:
     async def generate_enhanced_research(self, prompt: str) -> str:
         """生成增强版调研结果"""
         try:
+            sys.stderr.write(f"[DEBUG] generate_enhanced_research调用，使用模型: {self.model_name}\n")
             return await self.generate_content_with_retry(prompt)
         except Exception as e:
+            sys.stderr.write(f"[DEBUG] generate_enhanced_research失败: {str(e)}\n")
             raise Exception(f"调研生成失败: {str(e)}")
 
     async def generate_personal_statement(self, prompt: str) -> str:
