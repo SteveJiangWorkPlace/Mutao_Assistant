@@ -12,7 +12,9 @@
       "Bash(findstr:*)",
       "Bash(npx tsc:*)",
       "Bash(tree:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(timeout:*)",
+      "Bash(netstat:*)"
     ]
   }
 }

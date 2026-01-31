@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Textarea, Button, Icon, Card, Input, FileUpload } from '@/components'
 import type { UploadedFile } from '@/components/ui/FileUpload/FileUpload'
 import styles from './Workspace.module.css'
@@ -55,12 +55,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const [isStreaming, setIsStreaming] = useState<boolean>(false) // 流式输出状态
   const [streamingStep, setStreamingStep] = useState<'research' | 'statement' | null>(null) // 当前流式步骤
 
-  // 流式输出缓冲优化（参考Python示例）
-  const streamingBufferRef = useRef<string>('')
-  const streamingBufferTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const lastUpdateTimeRef = useRef<number>(0)
-  const BUFFER_SIZE = 200 // 字符阈值
-  const UPDATE_INTERVAL = 50 // 毫秒
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value
@@ -307,7 +301,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
     try {
       // 临时使用原有提示词，阶段三会替换为buildResearchPrompt()
       const prompt = buildPrompt()
-      await callGeminiAPIStream(prompt, handleBufferedChunk, handleStreamComplete)
+      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
     } catch (error) {
       console.error('流式生成失败:', error)
       setIsStreaming(false)
@@ -334,7 +328,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
     try {
       // 临时使用原有提示词，阶段四会替换为buildStatementPrompt()
       const prompt = `基于以下研究方向生成个人陈述：${selectedOption.title}\n\n${text}`
-      await callGeminiAPIStream(prompt, handleBufferedChunk, handleStreamComplete)
+      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
     } catch (error) {
       console.error('流式生成失败:', error)
       setIsStreaming(false)
