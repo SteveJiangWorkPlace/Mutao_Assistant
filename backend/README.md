@@ -77,8 +77,49 @@ GET /api/health
 ```
 
 ### PS写作API
+
+#### 1. 生成调研选项
 ```
-GET /api/ps-write/test      # 测试端点
+POST /api/ps-write/generate-with-selection
+```
+请求体示例：
+```json
+{
+  "school": "目标学校",
+  "major": "申请专业",
+  "courses": "相关课程描述",
+  "extracurricular": "课外经历描述",
+  "api_key": "您的Gemini API密钥"
+}
+```
+
+#### 2. 生成个人陈述
+```
+POST /api/ps-write/generate-ps
+```
+请求体示例：
+```json
+{
+  "selection": {
+    "selection_index": 0,
+    "research_options": [...]  // 从上一个端点获取的调研选项
+  },
+  "school": "目标学校",
+  "major": "申请专业",
+  "courses": "相关课程描述",
+  "extracurricular": "课外经历描述",
+  "api_key": "您的Gemini API密钥"
+}
+```
+
+#### 3. 测试端点
+```
+GET /api/ps-write/test-gemini?api_key=您的API密钥     # 测试Gemini连接
+GET /api/ps-write/test-prompt-format                  # 测试提示词格式
+GET /api/ps-write/session/{session_id}                # 获取会话信息
+GET /api/ps-write/cache-stats                         # 获取缓存统计信息
+GET /api/ps-write/clear-cache                         # 清空调研缓存（测试用）
+POST /api/ps-write/validate-references                # 测试参考文献验证
 ```
 
 ## 部署到Render
@@ -104,20 +145,29 @@ GET /api/ps-write/test      # 测试端点
 - FastAPI核心框架
 - 环境配置管理
 
-### 阶段3-4：AI集成（待开发）
-- Gemini API集成
-- 提示词工程
-- 数据模型设计
+### 阶段3-4：AI集成与数据模型（已完成）
+- ✓ Gemini API集成与服务封装
+- ✓ 提示词工程与模板设计
+- ✓ Pydantic数据模型设计
+- ✓ 代理配置与错误处理
+- ✓ 测试端点和验证机制
 
-### 阶段5-6：核心功能（待开发）
-- 调研分析功能
-- 交互选择机制
-- 会话状态管理
+### 阶段5：调研分析功能实现（已完成）
+- ✓ 调研结果解析器完善（文本转结构化数据）
+- ✓ 匹配度评分算法实现（基于内容的关键词匹配和结构分析）
+- ✓ 参考文献真实性验证（格式检查、权威来源识别、质量评分）
+- ✓ 调研结果缓存机制（24小时TTL，LRU淘汰策略）
+- ✓ 缓存统计和清理端点
+
+### 阶段6：交互选择与会话管理（待开发）
+- 交互选择机制完善
+- 会话状态管理优化
+- 安全防护机制
 
 ### 阶段7-8：完整实现（待开发）
-- 个人陈述生成
-- 测试优化
-- 生产部署
+- 个人陈述生成功能完善
+- 测试优化与性能调优
+- 生产部署与监控
 
 ## 注意事项
 
