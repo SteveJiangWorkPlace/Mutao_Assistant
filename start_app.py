@@ -23,8 +23,20 @@ def main():
         print("✅ app模块导入成功")
     except ImportError as e:
         print(f"❌ app模块导入失败: {e}")
+        print(f"当前目录: {os.getcwd()}")
         print(f"当前目录内容: {os.listdir('.')}")
         print(f"app目录内容: {os.listdir('app') if os.path.exists('app') else 'app目录不存在'}")
+        print(f"Python路径: {sys.path}")
+        # 尝试直接导入
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("app", "app/__init__.py")
+            if spec:
+                print("找到了app/__init__.py")
+            else:
+                print("未找到app/__init__.py")
+        except Exception as e2:
+            print(f"详细检查失败: {e2}")
         sys.exit(1)
 
     # 运行uvicorn

@@ -3,7 +3,7 @@ services:
     name: mutao-assistant-api
     env: python
     buildCommand: pip install -r backend/requirements.txt
-    startCommand: python start_app.py
+    startCommand: cd backend && python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.4
