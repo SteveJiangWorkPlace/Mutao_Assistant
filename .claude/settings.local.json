@@ -23,7 +23,8 @@
       "Bash(cmd /c \"rd /s /q backend\")",
       "Bash(powershell -Command:*)",
       "Bash(python -m py_compile:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(find:*)"
     ]
   }
 }
