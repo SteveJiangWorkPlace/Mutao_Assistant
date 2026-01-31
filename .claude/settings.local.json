@@ -14,7 +14,12 @@
       "Bash(tree:*)",
       "Bash(pip install:*)",
       "Bash(timeout:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(kill:*)",
+      "Bash(wmic process where processid=23368 delete:*)"
     ]
   }
 }

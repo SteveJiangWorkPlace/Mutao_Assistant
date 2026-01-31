@@ -20,5 +20,11 @@ export default defineConfig({
     modules: {
       localsConvention: 'camelCase'
     }
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5174,
+    strictPort: true,
+    open: false
   }
 })
