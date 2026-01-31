@@ -31,7 +31,8 @@
       "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\":*)",
       "Bash(echo:*)",
       "Bash(pip show:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(del:*)"
     ]
   },
   "hooks": {
