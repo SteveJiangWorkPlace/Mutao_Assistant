@@ -24,7 +24,8 @@
       "Bash(powershell -Command:*)",
       "Bash(python -m py_compile:*)",
       "Bash(python:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(uvicorn:*)"
     ]
   }
 }

@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 
 from app.api import ps_write
+from app.api.gemini import router as gemini_router
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -54,6 +55,7 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(ps_write.router)
+app.include_router(gemini_router)
 
 @app.get("/")
 async def root():

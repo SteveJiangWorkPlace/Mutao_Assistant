@@ -1,7 +1,7 @@
 import google.generativeai as genai
 import os
 import asyncio
-from typing import Optional
+from typing import Optional, AsyncGenerator
 import httpx
 from app.core.config import get_settings
 
@@ -99,3 +99,30 @@ class GeminiService:
             return '连接成功' in response
         except:
             return False
+
+    async def generate_content_stream(self, prompt: str) -> AsyncGenerator[str, None]:
+        """
+        流式生成内容
+
+        Args:
+            prompt: 提示词
+
+        Yields:
+            生成的内容块
+        """
+        try:
+            # 使用流式生成
+            response = await self.model.generate_content_async(prompt)
+
+            # 对于非流式API，我们可以模拟流式返回
+            # 将响应拆分成块以模拟流式
+            text = response.text
+            chunk_size = 50  # 每个块的大小
+
+            for i in range(0, len(text), chunk_size):
+                chunk = text[i:i + chunk_size]
+                yield chunk
+                await asyncio.sleep(0.05)  # 添加小延迟以模拟流式
+
+        except Exception as e:
+            raise Exception(f"流式生成失败: {str(e)}")
