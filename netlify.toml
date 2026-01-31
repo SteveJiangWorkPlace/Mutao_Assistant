@@ -1,10 +1,13 @@
 [build]
-  command = "npm run build"
   publish = "dist"
+  command = "npm run build"
+  installCommand = "npm install"
+  functions = "netlify/functions"
+  edge_functions = "netlify/edge-functions"
 
 [build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--production"
+  NODE_VERSION = "20"
+  NODE_ENV = "production"
 
 [context.production.environment]
   VITE_API_BASE_URL = "https://mutao-assistant-api.onrender.com"
