@@ -51,9 +51,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const [researchOptions, setResearchOptions] = useState<ResearchOption[]>([])
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
   const [personalStatement, setPersonalStatement] = useState<string>('')
-  const [streamingText, setStreamingText] = useState<string>('') // 流式输出当前文本
-  const [isStreaming, setIsStreaming] = useState<boolean>(false) // 流式输出状态
-  const [streamingStep, setStreamingStep] = useState<'research' | 'statement' | null>(null) // 当前流式步骤
 
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -156,186 +153,14 @@ const Workspace: React.FC<WorkspaceProps> = ({
   }
 
   // 流式API调用函数（阶段二：流式输出基础框架）- 改为调用后端流式API
-  const callGeminiAPIStream = async (
-    prompt: string,
-    onChunk: (chunk: string) => void,
-    onComplete: () => void
-  ): Promise<void> => {
-    if (!apiKey) {
-      throw new Error('请先在侧边栏输入Google API Key')
-    }
-
-    try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-      console.log(`调用后端流式API: ${apiBaseUrl}/api/gemini/stream`)
-
-      const response = await fetch(`${apiBaseUrl}/api/gemini/ps-write/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          school: schoolInfo.school,
-          major: schoolInfo.major,
-          courses: courseInfo,
-          extracurricular: text,
-          api_key: apiKey,
-          model_name: 'gemini-2.5-pro',
-          temperature: 0.7,
-          max_output_tokens: 4000
-        })
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`后端流式API调用失败: ${response.status} ${errorText}`)
-      }
-
-      // 处理流式响应
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder('utf-8')
-
-      if (!reader) {
-        throw new Error('无法获取响应流读取器')
-      }
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value)
-          const lines = chunk.split('\n')
-
-          for (const line of lines) {
-            const trimmedLine = line.trim()
-            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue
-
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6) // 移除'data: '前缀
-              try {
-                const parsed = JSON.parse(data)
-                if (parsed.content) {
-                  const cleanedText = cleanMarkdown(parsed.content)
-                  onChunk(cleanedText)
-                }
-              } catch (e) {
-                console.warn('解析流式响应数据失败:', e)
-              }
-            }
-          }
-        }
-      } finally {
-        reader.releaseLock()
-      }
-
-      console.log('后端流式API调用完成')
-      onComplete()
-
-    } catch (error) {
-      console.error('调用后端流式API失败:', error)
-      throw new Error(`后端流式API调用失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
 
   // 处理流式输出分块
-  const handleStreamChunk = (chunk: string) => {
-    console.log('收到流式分块:', chunk.length, '字符，内容:', chunk.substring(0, 100))
-    setStreamingText(prev => {
-      const newText = prev + chunk
-      console.log('流式文本累积长度:', newText.length)
-
-      // 如果是调研结果生成阶段，尝试解析JSON
-      if (streamingStep === 'research') {
-        // 尝试从累积文本中提取JSON
-        const jsonMatch = newText.match(/\{[\s\S]*\}/)
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0])
-            if (parsed.options && Array.isArray(parsed.options)) {
-              const optionsWithIds = parsed.options.map((opt: any, index: number) => ({
-                ...opt,
-                id: `opt_${Date.now()}_${index}`
-              }))
-              setResearchOptions(optionsWithIds)
-            }
-          } catch (e) {
-            // JSON解析失败，继续累积文本
-          }
-        }
-      }
-
-      return newText
-    })
-  }
 
 
   // 流式输出完成处理
-  const handleStreamComplete = () => {
-    setIsStreaming(false)
-    setStreamingStep(null)
-
-    if (streamingStep === 'research') {
-      setWorkflowStep('research')
-    } else if (streamingStep === 'statement') {
-      setPersonalStatement(streamingText)
-      setWorkflowStep('statement')
-    }
-
-    setStreamingText('') // 清空流式文本缓存
-    saveWorkflowState() // 保存进度
-  }
 
   // 开始流式生成（调研结果）
-  const startResearchStream = async () => {
-    if (!schoolInfo.major || !text.trim()) {
-      alert('请填写申请专业信息和课外经历')
-      return
-    }
 
-    setIsStreaming(true)
-    setStreamingStep('research')
-    setStreamingText('')
-    setResearchOptions([])
-
-    try {
-      // 临时使用原有提示词，阶段三会替换为buildResearchPrompt()
-      const prompt = buildPrompt()
-      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
-    } catch (error) {
-      console.error('流式生成失败:', error)
-      setIsStreaming(false)
-      setStreamingStep(null)
-      alert(`生成失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
-
-  // 开始流式生成（个人陈述）
-  const startStatementStream = async () => {
-    if (!selectedOptionId) {
-      alert('请先选择一个研究方向')
-      return
-    }
-
-    const selectedOption = researchOptions.find(opt => opt.id === selectedOptionId)
-    if (!selectedOption) return
-
-    setIsStreaming(true)
-    setStreamingStep('statement')
-    setStreamingText('')
-    setPersonalStatement('')
-
-    try {
-      // 临时使用原有提示词，阶段四会替换为buildStatementPrompt()
-      const prompt = `基于以下研究方向生成个人陈述：${selectedOption.title}\n\n${text}`
-      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
-    } catch (error) {
-      console.error('流式生成失败:', error)
-      setIsStreaming(false)
-      setStreamingStep(null)
-      alert(`生成失败: ${error instanceof Error ? error.message : '未知错误'}`)
-    }
-  }
 
   const handleGenerateAnalysis = async () => {
     if (!apiKey) {
@@ -423,7 +248,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
       schoolInfo,
       courseInfo,
       text,
-      streamingText: isStreaming ? streamingText : '', // 仅保存非流式时的文本
       timestamp: new Date().toISOString(),
       version: '2.0' // 版本标识
     }
@@ -454,10 +278,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
         setCourseInfo(state.courseInfo || '')
         setText(state.text || '')
 
-        // 如果之前有未完成的流式文本，显示恢复提示
-        if (state.streamingText) {
-          console.log('检测到未完成的生成内容，需要重新生成')
-        }
       }
     } catch (error) {
       console.error('加载保存状态失败:', error)
@@ -471,9 +291,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
     setResearchOptions([])
     setSelectedOptionId(null)
     setPersonalStatement('')
-    setStreamingText('')
-    setIsStreaming(false)
-    setStreamingStep(null)
   }
 
   // 组件挂载时加载状态
@@ -483,10 +300,8 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
   // 状态变化时自动保存（流式过程中不保存，避免频繁写入）
   useEffect(() => {
-    if (!isStreaming) {
-      saveWorkflowState()
-    }
-  }, [workflowStep, researchOptions, selectedOptionId, personalStatement, schoolInfo, courseInfo, text, isStreaming])
+    saveWorkflowState()
+  }, [workflowStep, researchOptions, selectedOptionId, personalStatement, schoolInfo, courseInfo, text])
 
   // 整合所有数据到预览中
   // 格式化调研结果用于预览显示
@@ -516,10 +331,6 @@ ${'='.repeat(60)}\n`
       return text
     }
 
-    // 流式输出优先显示
-    if (isStreaming) {
-      return streamingText || '正在生成内容...'
-    }
 
     switch (workflowStep) {
       case 'input':
@@ -624,11 +435,6 @@ ${'='.repeat(60)}\n`
               <span className={`${styles.stepDot} ${workflowStep === 'research' ? styles.active : ''}`}>调研选择</span>
               <span className={styles.stepSeparator}>→</span>
               <span className={`${styles.stepDot} ${workflowStep === 'statement' ? styles.active : ''}`}>个人陈述</span>
-              {isStreaming && (
-                <span className={styles.streamingBadge}>
-                  {streamingStep === 'research' ? '正在生成调研结果...' : '正在生成个人陈述...'}
-                </span>
-              )}
             </div>
           )}
         </div>
@@ -769,12 +575,12 @@ ${'='.repeat(60)}\n`
                   <Button
                     variant="primary"
                     size="medium"
-                    onClick={startResearchStream}
+                    onClick={handleGenerateAnalysis}
                     fullWidth
                     icon={<Icon name="preview" size="sm" />}
-                    disabled={isStreaming}
+                    disabled={isGenerating}
                   >
-                    {isStreaming && streamingStep === 'research' ? '流式生成中...' : '开始生成分析'}
+                    {isGenerating ? '生成中...' : '开始生成分析'}
                   </Button>
                 </div>
               </div>

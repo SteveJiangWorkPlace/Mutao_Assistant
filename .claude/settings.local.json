@@ -25,7 +25,29 @@
       "Bash(python -m py_compile:*)",
       "Bash(python:*)",
       "Bash(find:*)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash(where claude-code)",
+      "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\user-prompt-token-estimator.py\":*)",
+      "Bash(python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\":*)"
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python \"C:\\Users\\lenovo\\.claude\\hooks\\token-status-line.py\"",
+    "padding": 2
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"C:\\Users\\lenovo\\.claude\\hooks\\user-prompt-token-estimator.py\"",
+            "timeout": 5,
+            "statusMessage": "Estimating token usage..."
+          }
+        ]
+      }
     ]
   }
 }
