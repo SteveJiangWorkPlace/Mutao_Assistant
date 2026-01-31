@@ -1,10 +1,9 @@
 :root {
-  /* Primary colors */
-  --color-paper-white: #F1ECE0;  /* 麻纸米白 */
-  --color-deep-green: #117C0D;   /* 草木深绿 */
-  --color-warm-yellow: #FAC75E;  /* 麦秆暖黄 */
+  /* Black & white theme */
+  --color-black: #110D0C;
+  --color-white: #FFFFFF;
 
-  /* Neutral grayscale */
+  /* Neutral grayscale (simplified) */
   --color-gray-50: #FAFAFA;
   --color-gray-100: #F5F5F5;
   --color-gray-200: #EEEEEE;
@@ -16,18 +15,18 @@
   --color-gray-800: #424242;
   --color-gray-900: #212121;
 
-  /* Functional colors */
+  /* Functional colors (monochrome) */
   --color-success: #4CAF50;
   --color-warning: #FF9800;
   --color-error: #F44336;
   --color-info: #2196F3;
 
   /* Semantic colors */
-  --color-primary: var(--color-deep-green);
-  --color-secondary: var(--color-warm-yellow);
-  --color-background: var(--color-paper-white);
+  --color-primary: var(--color-black);
+  --color-secondary: var(--color-gray-300);
+  --color-background: var(--color-white);
   --color-surface: #FFFFFF;
-  --color-text-primary: var(--color-gray-900);
+  --color-text-primary: var(--color-black);
   --color-text-secondary: var(--color-gray-600);
   --color-text-disabled: var(--color-gray-400);
   --color-border: var(--color-gray-300);
@@ -37,10 +36,10 @@
   --color-sidebar-bg: var(--color-surface);
   --color-sidebar-text: var(--color-text-primary);
   --color-sidebar-hover: var(--color-gray-100);
-  --color-sidebar-active: var(--color-primary);
-  --color-workspace-bg: var(--color-background);
-  --color-button-primary-bg: var(--color-primary);
-  --color-button-primary-text: #FFFFFF;
-  --color-button-secondary-bg: var(--color-secondary);
-  --color-button-secondary-text: var(--color-gray-900);
+  --color-sidebar-active: var(--color-black);
+  --color-workspace-bg: var(--color-white);
+  --color-button-primary-bg: var(--color-black);
+  --color-button-primary-text: var(--color-white);
+  --color-button-secondary-bg: var(--color-gray-200);
+  --color-button-secondary-text: var(--color-black);
 }

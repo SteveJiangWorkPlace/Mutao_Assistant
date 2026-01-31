@@ -99,6 +99,15 @@ const icons = {
       <path d="M7 10l5 5 5-5" />
       <path d="M12 15V3" />
     </svg>
+  ),
+  school: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M22 9L12 2 2 9v11a2 2 0 002 2h16a2 2 0 002-2V9z" />
+      <path d="M6 22V12" />
+      <path d="M18 22V12" />
+      <path d="M9 12h6" />
+      <path d="M12 2v20" />
+    </svg>
   )
 } as const
 

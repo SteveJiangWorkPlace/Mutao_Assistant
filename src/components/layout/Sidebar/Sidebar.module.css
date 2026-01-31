@@ -1,8 +1,8 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 280px;
-  min-width: 280px;
+  width: 240px;
+  min-width: 240px;
   background-color: var(--color-sidebar-bg);
   border-right: 1px solid var(--color-border);
   transition: var(--transition-normal);
@@ -17,28 +17,39 @@
 
 .header {
   display: flex;
-  align-items: center;
+  align-items: center; /* 改为居中对齐以匹配Workspace */
   justify-content: space-between;
-  padding: var(--spacing-4);
-  border-bottom: 1px solid var(--color-border);
-  min-height: 72px;
+  padding: var(--spacing-6) var(--spacing-6); /* 统一左右padding为spacing-6 */
+  min-height: auto; /* 移除固定高度，通过padding控制 */
 }
 
 .logo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-3);
+  margin-top: 0;
+}
+
+.logoImage {
+  width: 40px;
+  height: 40px;
+}
+
+.logoTexts {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-1);
 }
 
 .logoText {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
   line-height: var(--line-height-tight);
 }
 
 .logoSubtext {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   line-height: var(--line-height-tight);
 }
@@ -47,9 +58,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   background-color: transparent;
   color: var(--color-text-secondary);
@@ -68,7 +79,7 @@
 
 .nav {
   flex: 1;
-  padding: var(--spacing-4) 0;
+  padding: var(--spacing-8) 0 var(--spacing-4) 0;
   overflow-y: auto;
 }
 
@@ -86,9 +97,9 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--spacing-3) var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-4);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background-color: transparent;
   color: var(--color-sidebar-text);
   text-align: left;
@@ -144,7 +155,6 @@
 
 .footer {
   padding: var(--spacing-4);
-  border-top: 1px solid var(--color-border);
   text-align: center;
 }
 
@@ -196,4 +206,11 @@
   .sidebar.collapsed .menuButton {
     padding: var(--spacing-2);
   }
+}
+
+.apiKeySection {
+  padding: var(--spacing-4);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-gray-50);
 }

@@ -12,9 +12,9 @@
 
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-start; /* 改为顶部对齐 */
   justify-content: space-between;
-  padding: var(--spacing-6) var(--spacing-6) var(--spacing-4);
+  padding: var(--spacing-6) var(--spacing-6);
   border-bottom: 1px solid var(--color-border);
   background-color: var(--color-surface);
   gap: var(--spacing-4);
@@ -28,46 +28,53 @@
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-2);
+  margin-bottom: 0;
   line-height: var(--line-height-tight);
 }
 
 .description {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  line-height: var(--line-height-normal);
+  line-height: var(--line-height-tight);
   max-width: 600px;
+  margin-top: var(--spacing-1);
+}
+
+.buttonGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+  align-items: flex-end; /* 水平右对齐 */
+  justify-content: flex-start; /* 垂直顶部对齐 */
 }
 
 .actions {
   display: flex;
   gap: var(--spacing-3);
-  flex-shrink: 0;
 }
 
 .splitControls {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-3) var(--spacing-6);
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
   gap: var(--spacing-2);
 }
 
 .splitButton {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-2);
-  padding: var(--spacing-2) var(--spacing-3);
+  padding: var(--spacing-1) var(--spacing-3);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background-color: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
   transition: var(--transition-fast);
+  min-height: 28px;
+  min-width: 80px;
 }
 
 .splitButton:hover {
@@ -76,13 +83,13 @@
 }
 
 .splitButton.active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: var(--color-gray-500);
+  border-color: var(--color-gray-500);
   color: white;
 }
 
 .splitButton.active:hover {
-  background-color: color-mix(in srgb, var(--color-primary) 90%, black);
+  background-color: var(--color-gray-600);
 }
 
 .content {
@@ -90,7 +97,7 @@
   display: flex;
   overflow: hidden;
   padding: var(--spacing-6);
-  gap: var(--spacing-6);
+  gap: var(--spacing-4);
   background-color: var(--color-workspace-bg);
 }
 
@@ -102,13 +109,20 @@
   overflow: hidden;
 }
 
+.editorSection > div, /* Card container */
+.previewSection > div { /* Card container */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-4);
+  margin-bottom: var(--spacing-2);
   padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--color-border);
+  /* border-bottom: 1px solid var(--color-border); */
 }
 
 .sectionTitle {
@@ -169,10 +183,10 @@
   flex: 1;
   overflow: auto;
   background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--radius-md);
   padding: var(--spacing-4);
-  min-height: 300px;
+  min-height: 0; /* Allow it to shrink */
 }
 
 .previewText {
@@ -180,51 +194,98 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
 }
 
-.emptyPreview {
+
+
+.editorContent {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--color-text-secondary);
-  text-align: center;
-  gap: var(--spacing-3);
+  min-height: 0; /* Allow it to shrink */
+  padding-bottom: var(--spacing-4); /* Match left/right padding */
 }
 
-.emptyPreview p {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-}
-
-.previewStats {
+/* PS写作模块专用样式 */
+.psWriteSection {
   display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  height: 100%;
+  overflow-y: auto;
+  padding-right: var(--spacing-2);
+}
+
+.module {
+  display: flex;
+  flex-direction: column;
   gap: var(--spacing-4);
-  margin-top: var(--spacing-4);
-  padding-top: var(--spacing-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  transition: var(--transition-fast);
+}
+
+.module:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.divider {
+  height: 1px;
+  background-color: var(--color-border);
+  margin: var(--spacing-2) 0;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--color-border);
+}
+
+.formFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.generateButtonContainer {
+  margin-top: var(--spacing-6);
+  padding-top: var(--spacing-4);
   border-top: 1px solid var(--color-border);
 }
 
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-1);
+/* 滚动条样式 */
+.psWriteSection::-webkit-scrollbar {
+  width: 6px;
 }
 
-.statLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+.psWriteSection::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+  border-radius: 3px;
 }
 
-.statValue {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
+.psWriteSection::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+  border-radius: 3px;
+}
+
+.psWriteSection::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+.editorContent textarea {
+  flex: 1;
+  min-height: 0; /* Allow it to shrink */
 }
 
 @media (max-width: 1024px) {
@@ -237,6 +298,8 @@
   .previewSection {
     width: 100% !important;
     display: flex !important;
+    flex: 1;
+    min-height: 300px; /* Ensure minimum height on mobile */
   }
 
   .header {
@@ -244,7 +307,17 @@
     gap: var(--spacing-3);
   }
 
+  .buttonGroups {
+    align-items: flex-start;
+    width: 100%;
+  }
+
   .actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .splitControls {
     width: 100%;
     justify-content: flex-start;
   }
@@ -273,5 +346,54 @@
   .stat {
     flex: 1;
     min-width: 80px;
+  }
+}
+
+/* 工作流指示器样式（阶段二） */
+.workflowIndicator {
+  display: flex;
+  align-items: center;
+  margin-top: var(--spacing-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  flex-wrap: wrap;
+  gap: var(--spacing-1);
+}
+
+.stepDot {
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-surface-variant);
+  transition: all var(--transition-fast);
+}
+
+.stepDot.active {
+  background-color: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.stepSeparator {
+  margin: 0 var(--spacing-1);
+  color: var(--color-text-tertiary);
+}
+
+.streamingBadge {
+  margin-left: var(--spacing-3);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-info-container);
+  color: var(--color-on-info-container);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }

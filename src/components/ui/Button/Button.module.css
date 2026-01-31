@@ -4,7 +4,7 @@
   justify-content: center;
   gap: var(--spacing-2);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   font-family: var(--font-family-base);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
@@ -81,19 +81,19 @@
 .size-small {
   padding: var(--spacing-1) var(--spacing-3);
   font-size: var(--font-size-sm);
-  min-height: 32px;
+  min-height: 28px;
 }
 
 .size-medium {
   padding: var(--spacing-2) var(--spacing-4);
   font-size: var(--font-size-base);
-  min-height: 40px;
+  min-height: 36px;
 }
 
 .size-large {
   padding: var(--spacing-3) var(--spacing-6);
   font-size: var(--font-size-lg);
-  min-height: 48px;
+  min-height: 40px;
 }
 
 /* Icon positioning */
