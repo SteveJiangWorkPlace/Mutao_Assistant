@@ -2,11 +2,9 @@
   publish = "dist"
   command = "npm run build"
   installCommand = "npm install"
-  functions = "netlify/functions"
-  edge_functions = "netlify/edge-functions"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "18"
   NODE_ENV = "production"
 
 [context.production.environment]
