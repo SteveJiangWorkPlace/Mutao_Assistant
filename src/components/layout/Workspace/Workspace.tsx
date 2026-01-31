@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Textarea, Button, Icon, Card, Input, FileUpload } from '@/components'
 import type { UploadedFile } from '@/components/ui/FileUpload/FileUpload'
 import styles from './Workspace.module.css'
@@ -54,6 +54,13 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const [streamingText, setStreamingText] = useState<string>('') // 流式输出当前文本
   const [isStreaming, setIsStreaming] = useState<boolean>(false) // 流式输出状态
   const [streamingStep, setStreamingStep] = useState<'research' | 'statement' | null>(null) // 当前流式步骤
+
+  // 流式输出缓冲优化（参考Python示例）
+  const streamingBufferRef = useRef<string>('')
+  const streamingBufferTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const lastUpdateTimeRef = useRef<number>(0)
+  const BUFFER_SIZE = 200 // 字符阈值
+  const UPDATE_INTERVAL = 50 // 毫秒
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value
@@ -116,61 +123,45 @@ const Workspace: React.FC<WorkspaceProps> = ({
       throw new Error('请先在侧边栏输入Google API Key')
     }
 
-    // 强制使用gemini-2.5-pro模型
-    const modelNames = [
-      'gemini-2.5-pro' // 用户指定，强制使用此模型
-    ]
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+      console.log(`调用后端API: ${apiBaseUrl}/api/gemini/generate`)
 
-    let lastError: Error | null = null
+      const response = await fetch(`${apiBaseUrl}/api/gemini/ps-write/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          school: schoolInfo.school,
+          major: schoolInfo.major,
+          courses: courseInfo,
+          extracurricular: text,
+          api_key: apiKey,
+          model_name: 'gemini-2.5-pro',
+          temperature: 0.7,
+          max_output_tokens: 2000
+        })
+      })
 
-    for (const modelName of modelNames) {
-      try {
-        console.log(`尝试使用模型: ${modelName}`)
-
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: prompt
-                }]
-              }],
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 2000,
-              }
-            })
-          }
-        )
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`${modelName} API调用失败: ${response.status} ${errorText}`)
-        }
-
-        const data = await response.json()
-        const result = data.candidates?.[0]?.content?.parts?.[0]?.text || '未收到有效回复'
-
-        console.log(`模型 ${modelName} 调用成功`)
-        return result
-
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error))
-        console.warn(`模型 ${modelName} 调用失败:`, error)
-        // 继续尝试下一个模型
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`后端API调用失败: ${response.status} ${errorText}`)
       }
-    }
 
-    // 所有模型都失败
-    throw new Error(`所有模型尝试均失败。最后错误: ${lastError?.message}`)
+      const data = await response.json()
+      const result = data.result || '未收到有效回复'
+
+      console.log(`后端API调用成功`)
+      return result
+
+    } catch (error) {
+      console.error('调用后端API失败:', error)
+      throw new Error(`后端API调用失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
-  // 流式API调用函数（阶段二：流式输出基础框架）
+  // 流式API调用函数（阶段二：流式输出基础框架）- 改为调用后端流式API
   const callGeminiAPIStream = async (
     prompt: string,
     onChunk: (chunk: string) => void,
@@ -180,102 +171,85 @@ const Workspace: React.FC<WorkspaceProps> = ({
       throw new Error('请先在侧边栏输入Google API Key')
     }
 
-    // 强制使用gemini-2.5-pro模型（流式模式）
-    const modelNames = [
-      'gemini-2.5-pro' // 用户指定，强制使用此模型
-    ]
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+      console.log(`调用后端流式API: ${apiBaseUrl}/api/gemini/stream`)
 
-    let lastError: Error | null = null
+      const response = await fetch(`${apiBaseUrl}/api/gemini/ps-write/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          school: schoolInfo.school,
+          major: schoolInfo.major,
+          courses: courseInfo,
+          extracurricular: text,
+          api_key: apiKey,
+          model_name: 'gemini-2.5-pro',
+          temperature: 0.7,
+          max_output_tokens: 4000
+        })
+      })
 
-    for (const modelName of modelNames) {
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`后端流式API调用失败: ${response.status} ${errorText}`)
+      }
+
+      // 处理流式响应
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder('utf-8')
+
+      if (!reader) {
+        throw new Error('无法获取响应流读取器')
+      }
+
       try {
-        console.log(`尝试使用模型: ${modelName} (流式模式)`)
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: prompt }]
-              }],
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 4000,
-              }
-            })
-          }
-        )
+          const chunk = decoder.decode(value)
+          const lines = chunk.split('\n')
 
-        if (!response.ok) {
-          const errorText = await response.text()
-          throw new Error(`${modelName} API调用失败: ${response.status} ${errorText}`)
-        }
+          for (const line of lines) {
+            const trimmedLine = line.trim()
+            if (!trimmedLine || trimmedLine === 'data: [DONE]') continue
 
-        // 处理流式响应
-        const reader = response.body?.getReader()
-        const decoder = new TextDecoder('utf-8')
-        let accumulatedText = ''
-
-        if (!reader) {
-          throw new Error('无法获取响应流读取器')
-        }
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-
-            const chunk = decoder.decode(value)
-            const lines = chunk.split('\n')
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6) // 移除'data: '前缀
-                if (data.trim() === '[DONE]') continue
-
-                try {
-                  const parsed = JSON.parse(data)
-                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text || ''
-
-                  if (text) {
-                    // 清理Markdown符号
-                    const cleanedText = cleanMarkdown(text)
-                    accumulatedText += cleanedText
-                    onChunk(cleanedText)
-                  }
-                } catch (e) {
-                  console.warn('解析流式响应数据失败:', e)
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6) // 移除'data: '前缀
+              try {
+                const parsed = JSON.parse(data)
+                if (parsed.content) {
+                  const cleanedText = cleanMarkdown(parsed.content)
+                  onChunk(cleanedText)
                 }
+              } catch (e) {
+                console.warn('解析流式响应数据失败:', e)
               }
             }
           }
-        } finally {
-          reader.releaseLock()
         }
-
-        console.log(`模型 ${modelName} 流式调用成功，总文本长度:`, accumulatedText.length)
-        onComplete()
-        return
-
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error))
-        console.warn(`模型 ${modelName} 流式调用失败:`, error)
-        // 继续尝试下一个模型
+      } finally {
+        reader.releaseLock()
       }
-    }
 
-    // 所有模型都失败
-    throw new Error(`所有模型流式尝试均失败。最后错误: ${lastError?.message}`)
+      console.log('后端流式API调用完成')
+      onComplete()
+
+    } catch (error) {
+      console.error('调用后端流式API失败:', error)
+      throw new Error(`后端流式API调用失败: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   }
 
   // 处理流式输出分块
   const handleStreamChunk = (chunk: string) => {
+    console.log('收到流式分块:', chunk.length, '字符，内容:', chunk.substring(0, 100))
     setStreamingText(prev => {
       const newText = prev + chunk
+      console.log('流式文本累积长度:', newText.length)
 
       // 如果是调研结果生成阶段，尝试解析JSON
       if (streamingStep === 'research') {
@@ -300,6 +274,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
       return newText
     })
   }
+
 
   // 流式输出完成处理
   const handleStreamComplete = () => {
@@ -332,7 +307,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
     try {
       // 临时使用原有提示词，阶段三会替换为buildResearchPrompt()
       const prompt = buildPrompt()
-      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
+      await callGeminiAPIStream(prompt, handleBufferedChunk, handleStreamComplete)
     } catch (error) {
       console.error('流式生成失败:', error)
       setIsStreaming(false)
@@ -359,7 +334,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
     try {
       // 临时使用原有提示词，阶段四会替换为buildStatementPrompt()
       const prompt = `基于以下研究方向生成个人陈述：${selectedOption.title}\n\n${text}`
-      await callGeminiAPIStream(prompt, handleStreamChunk, handleStreamComplete)
+      await callGeminiAPIStream(prompt, handleBufferedChunk, handleStreamComplete)
     } catch (error) {
       console.error('流式生成失败:', error)
       setIsStreaming(false)
