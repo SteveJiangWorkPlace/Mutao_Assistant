@@ -1,0 +1,1 @@
+"""Mutao Assistant FastAPI application."""
