@@ -6,7 +6,6 @@ import styles from './Workspace.module.css'
 export interface WorkspaceProps {
   isSidebarCollapsed: boolean
   activeTool: 'ps-write' | 'ps-review' | 'rl-write' | 'cv-write'
-  apiKey: string
 }
 
 // PS写作工作流类型定义
@@ -33,8 +32,7 @@ interface WorkflowState {
 
 const Workspace: React.FC<WorkspaceProps> = ({
   isSidebarCollapsed,
-  activeTool,
-  apiKey
+  activeTool
 }) => {
   const [text, setText] = useState('')
   const [splitRatio, setSplitRatio] = useState(65) // 65% editor, 35% preview
@@ -110,10 +108,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
   }
 
   const callGeminiAPI = async () => {
-    if (!apiKey) {
-      throw new Error('请先在侧边栏输入Google API Key')
-    }
-
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
       console.log(`调用后端API: ${apiBaseUrl}/api/gemini/generate`)
@@ -128,7 +122,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
           major: schoolInfo.major,
           courses: courseInfo,
           extracurricular: text,
-          api_key: apiKey,
           model_name: 'gemini-2.5-pro',
           temperature: 0.7,
           max_output_tokens: 2000
@@ -163,11 +156,6 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
 
   const handleGenerateAnalysis = async () => {
-    if (!apiKey) {
-      alert('请先在侧边栏输入Google API Key')
-      return
-    }
-
     if (!schoolInfo.major || !text.trim()) {
       alert('请填写申请专业信息和课外经历')
       return

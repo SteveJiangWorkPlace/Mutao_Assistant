@@ -7,6 +7,9 @@ import asyncio
 from app.models.schemas import PSWriteRequest
 from app.services.gemini import GeminiService
 from app.services.prompts import format_enhanced_research_prompt
+from app.core.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/gemini", tags=["gemini"])
 
@@ -18,15 +21,16 @@ async def generate_content(request: PSWriteRequest):
     与前端保持兼容的API端点
     """
     try:
-        # 验证API密钥
-        if not request.api_key or len(request.api_key) < 10:
+        # 从环境变量获取API密钥
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or len(api_key) < 10:
             raise HTTPException(
-                status_code=400,
-                detail="请提供有效的Gemini API密钥"
+                status_code=500,
+                detail="服务器未配置Gemini API密钥，请联系管理员设置GEMINI_API_KEY环境变量"
             )
 
         # 初始化Gemini服务
-        gemini = GeminiService(api_key=request.api_key)
+        gemini = GeminiService(api_key=api_key)
 
         # 构建提示词
         prompt = format_enhanced_research_prompt(

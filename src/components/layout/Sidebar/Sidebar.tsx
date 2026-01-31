@@ -7,17 +7,13 @@ export interface SidebarProps {
   activeTool: 'ps-write' | 'ps-review' | 'rl-write' | 'cv-write'
   onToolSelect: (tool: SidebarProps['activeTool']) => void
   onToggle: () => void
-  apiKey: string
-  onApiKeyChange: (key: string) => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
   activeTool,
   onToolSelect,
-  onToggle,
-  apiKey,
-  onApiKeyChange
+  onToggle
 }) => {
   const menuItems = [
     {
@@ -102,22 +98,10 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {!isCollapsed && (
-        <>
-          <div className={styles.apiKeySection}>
-            <Input
-              label="Google API Key"
-              type="password"
-              value={apiKey}
-              onChange={(e) => onApiKeyChange(e.target.value)}
-              placeholder="请输入Google API Key"
-              fullWidth
-            />
-          </div>
-          <div className={styles.footer}>
-            <div className={styles.version}>v0.1.0</div>
-            <div className={styles.copyright}>© 2024 Mutao Assistant</div>
-          </div>
-        </>
+        <div className={styles.footer}>
+          <div className={styles.version}>v0.1.0</div>
+          <div className={styles.copyright}>© 2024 Mutao Assistant</div>
+        </div>
       )}
     </aside>
   )

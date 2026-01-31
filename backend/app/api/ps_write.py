@@ -22,6 +22,9 @@ from app.services.parser import (
     enhance_research_option_with_scoring,
     validate_and_score_references
 )
+from app.core.config import get_settings
+
+settings = get_settings()
 
 router = APIRouter(prefix="/api/ps-write", tags=["ps-write"])
 
@@ -39,11 +42,12 @@ async def generate_research_options(request: PSWriteRequest):
     - 创建会话并返回会话ID和调研选项
     """
     try:
-        # 验证API密钥
-        if not request.api_key or len(request.api_key) < 10:
+        # 从环境变量获取API密钥
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or len(api_key) < 10:
             raise HTTPException(
-                status_code=400,
-                detail="请提供有效的Gemini API密钥"
+                status_code=500,
+                detail="服务器未配置Gemini API密钥，请联系管理员设置GEMINI_API_KEY环境变量"
             )
 
         # 检查缓存
@@ -63,7 +67,7 @@ async def generate_research_options(request: PSWriteRequest):
             cache_hit = False
 
             # 初始化Gemini服务
-            gemini = GeminiService(api_key=request.api_key)
+            gemini = GeminiService(api_key=api_key)
 
             # 测试连接（可选）
             # if not await gemini.test_connection():
@@ -173,15 +177,16 @@ async def generate_personal_statement(request: PSGenerationRequest):
 
         selected_option = research_options[selection_index]
 
-        # 验证API密钥
-        if not request.api_key or len(request.api_key) < 10:
+        # 从环境变量获取API密钥
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or len(api_key) < 10:
             raise HTTPException(
-                status_code=400,
-                detail="请提供有效的Gemini API密钥"
+                status_code=500,
+                detail="服务器未配置Gemini API密钥，请联系管理员设置GEMINI_API_KEY环境变量"
             )
 
         # 初始化Gemini服务
-        gemini = GeminiService(api_key=request.api_key)
+        gemini = GeminiService(api_key=api_key)
 
         # 构建个人陈述提示词
         prompt = format_personal_statement_prompt(
@@ -213,14 +218,22 @@ async def generate_personal_statement(request: PSGenerationRequest):
         )
 
 @router.get("/test-gemini")
-async def test_gemini_integration(api_key: str):
+async def test_gemini_integration():
     """
     测试Gemini集成
 
-    - 测试API密钥有效性
+    - 测试环境变量中的API密钥有效性
     - 测试Gemini连接
     """
     try:
+        # 从环境变量获取API密钥
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or len(api_key) < 10:
+            raise HTTPException(
+                status_code=500,
+                detail="服务器未配置Gemini API密钥，请联系管理员设置GEMINI_API_KEY环境变量"
+            )
+
         gemini = GeminiService(api_key=api_key)
         is_connected = await gemini.test_connection()
 

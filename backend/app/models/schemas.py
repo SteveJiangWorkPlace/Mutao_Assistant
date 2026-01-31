@@ -22,7 +22,7 @@ class PSWriteRequest(BaseModel):
     major: str = Field(..., description="申请专业")
     courses: str = Field(..., description="相关课程描述")
     extracurricular: str = Field(..., description="课外经历描述")
-    api_key: str = Field(..., description="用户提供的Gemini API密钥")
+    # api_key 字段已移除，从环境变量GEMINI_API_KEY读取
     model_name: Optional[str] = Field(None, description="模型名称")
     temperature: Optional[float] = Field(None, description="温度参数")
     max_output_tokens: Optional[int] = Field(None, description="最大输出token数")
@@ -34,7 +34,7 @@ class PSGenerationRequest(BaseModel):
     major: str = Field(..., description="申请专业")
     courses: str = Field(..., description="相关课程描述")
     extracurricular: str = Field(..., description="课外经历描述")
-    api_key: str = Field(..., description="用户提供的Gemini API密钥")
+    # api_key 字段已移除，从环境变量GEMINI_API_KEY读取
 
 class PersonalStatement(BaseModel):
     """个人陈述响应"""
