@@ -51,6 +51,8 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
   const [personalStatement, setPersonalStatement] = useState<string>('')
   const [activeResearchTab, setActiveResearchTab] = useState<number>(0) // 当前选中的调研标签索引 (0, 1, 2)
+  const [previewFontSize, setPreviewFontSize] = useState<'small' | 'medium' | 'large'>('medium')
+  const [previewLineHeight, setPreviewLineHeight] = useState<'normal' | 'relaxed' | 'compact'>('normal')
 
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -72,6 +74,17 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
   const handleCourseInfoChange = (value: string) => {
     setCourseInfo(value)
+  }
+
+  const handleResearchTabChange = (index: number) => {
+    setActiveResearchTab(index)
+    // 切换标签时重置预览区滚动位置
+    setTimeout(() => {
+      const previewContainer = document.querySelector(`.${styles.previewTextContainer}`)
+      if (previewContainer) {
+        previewContainer.scrollTop = 0
+      }
+    }, 0)
   }
 
   const buildPrompt = () => {
@@ -345,7 +358,7 @@ ${opt.references}`
 
     return researchOptions
       .sort((a, b) => b.matchScore - a.matchScore)
-      .map((opt, index) => {
+      .map((_opt, index) => {
         // 每个细分领域之间有两个空行（包括分隔线）
         return `${formatSingleResearchOption(index)}\n\n${'='.repeat(60)}`;
       })
@@ -443,7 +456,6 @@ ${opt.references}`
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
     document.body.style.webkitUserSelect = 'none'
-    document.body.style.msUserSelect = 'none'
   }
 
   const handleDrag = (e: MouseEvent) => {
@@ -466,7 +478,6 @@ ${opt.references}`
     document.body.style.cursor = ''
     document.body.style.userSelect = ''
     document.body.style.webkitUserSelect = ''
-    document.body.style.msUserSelect = ''
   }
 
   // 添加全局鼠标事件监听
@@ -752,6 +763,51 @@ ${opt.references}`
                 <Icon name="preview" size="sm" variant="primary" />
                 预览
               </h2>
+              <div className={styles.previewFormatControls}>
+                <button
+                  className={`${styles.previewFormatButton} ${previewFontSize === 'small' ? styles.active : ''}`}
+                  onClick={() => setPreviewFontSize('small')}
+                  title="小字体"
+                >
+                  A
+                </button>
+                <button
+                  className={`${styles.previewFormatButton} ${previewFontSize === 'medium' ? styles.active : ''}`}
+                  onClick={() => setPreviewFontSize('medium')}
+                  title="中字体"
+                >
+                  A
+                </button>
+                <button
+                  className={`${styles.previewFormatButton} ${previewFontSize === 'large' ? styles.active : ''}`}
+                  onClick={() => setPreviewFontSize('large')}
+                  title="大字体"
+                >
+                  A
+                </button>
+                <span style={{ width: '1px', height: '16px', backgroundColor: 'var(--color-border)', margin: '0 4px' }}></span>
+                <button
+                  className={`${styles.previewFormatButton} ${previewLineHeight === 'compact' ? styles.active : ''}`}
+                  onClick={() => setPreviewLineHeight('compact')}
+                  title="紧凑行高"
+                >
+                  ≡
+                </button>
+                <button
+                  className={`${styles.previewFormatButton} ${previewLineHeight === 'normal' ? styles.active : ''}`}
+                  onClick={() => setPreviewLineHeight('normal')}
+                  title="正常行高"
+                >
+                  ≡
+                </button>
+                <button
+                  className={`${styles.previewFormatButton} ${previewLineHeight === 'relaxed' ? styles.active : ''}`}
+                  onClick={() => setPreviewLineHeight('relaxed')}
+                  title="宽松行高"
+                >
+                  ≡
+                </button>
+              </div>
             </div>
 
             {/* 调研结果标签页 */}
@@ -761,7 +817,7 @@ ${opt.references}`
                   <button
                     key={opt.id || index}
                     className={`${styles.researchTab} ${activeResearchTab === index ? styles.active : ''}`}
-                    onClick={() => setActiveResearchTab(index)}
+                    onClick={() => handleResearchTabChange(index)}
                   >
                     细分领域{index + 1}
                   </button>
@@ -770,7 +826,7 @@ ${opt.references}`
             )}
 
             <div className={styles.previewContent}>
-              <div className={styles.previewTextContainer}>
+              <div className={`${styles.previewTextContainer} ${styles[`fontSize-${previewFontSize}`]} ${styles[`lineHeight-${previewLineHeight}`]}`}>
                 {isGenerating ? (
                   <div className={styles.loadingDots}>
                     <div className={styles.dot}></div>
