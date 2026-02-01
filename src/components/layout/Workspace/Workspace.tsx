@@ -50,6 +50,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const [researchOptions, setResearchOptions] = useState<ResearchOption[]>([])
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
   const [personalStatement, setPersonalStatement] = useState<string>('')
+  const [activeResearchTab, setActiveResearchTab] = useState<number>(0) // 当前选中的调研标签索引 (0, 1, 2)
 
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -296,8 +297,47 @@ const Workspace: React.FC<WorkspaceProps> = ({
   }, [workflowStep, researchOptions, selectedOptionId, personalStatement, schoolInfo, courseInfo, text])
 
   // 整合所有数据到预览中
-  // 格式化调研结果用于预览显示
-  const formatResearchOptionsForPreview = (): string => {
+  // 格式化单个调研选项用于预览显示
+  const formatSingleResearchOption = (index: number = activeResearchTab): string => {
+    if (researchOptions.length === 0) {
+      return '暂无调研结果。'
+    }
+
+    // 确保索引在有效范围内
+    const safeIndex = Math.max(0, Math.min(index, researchOptions.length - 1));
+    const opt = researchOptions.sort((a, b) => b.matchScore - a.matchScore)[safeIndex];
+
+    if (!opt) {
+      return '暂无调研结果。'
+    }
+
+    // 处理reasoning，可能是字符串或字符串数组
+    let reasoningText = opt.reasoning;
+    if (Array.isArray(reasoningText)) {
+      reasoningText = reasoningText.join('\n');
+    }
+
+    // 移除"详细理由："前缀（如果存在）
+    reasoningText = reasoningText.replace(/^详细理由：\s*/, '');
+
+    // 按用户要求的格式：每个细分领域单独一行，小标题加粗，各部分之间换行
+    // 注意：加粗效果由formatPreviewWithBoldTitles函数处理
+    return `细分领域${safeIndex + 1}: ${opt.title}
+
+趋势分析: ${reasoningText.includes('趋势分析:') ? reasoningText.split('趋势分析:')[1]?.split('痛点识别:')[0]?.trim() || '未提供' : '未提供'}
+
+痛点识别: ${reasoningText.includes('痛点识别:') ? reasoningText.split('痛点识别:')[1]?.split('机会点:')[0]?.trim() || '未提供' : '未提供'}
+
+机会点: ${reasoningText.includes('机会点:') ? reasoningText.split('机会点:')[1]?.split('技能匹配:')[0]?.trim() || '未提供' : '未提供'}
+
+技能匹配: ${reasoningText.includes('技能匹配:') ? reasoningText.split('技能匹配:')[1]?.trim() || '未提供' : '未提供'}
+
+参考文献:
+${opt.references}`
+  }
+
+  // 格式化所有调研选项（用于下载等场景）
+  const formatAllResearchOptions = (): string => {
     if (researchOptions.length === 0) {
       return '暂无调研结果。'
     }
@@ -305,23 +345,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
     return researchOptions
       .sort((a, b) => b.matchScore - a.matchScore)
       .map((opt, index) => {
-        // 处理reasoning，可能是字符串或字符串数组
-        let reasoningText = opt.reasoning;
-        if (Array.isArray(reasoningText)) {
-          reasoningText = reasoningText.join('\n');
-        }
-
-        // 移除“详细理由：”前缀（如果存在）
-        reasoningText = reasoningText.replace(/^详细理由：\s*/, '');
-
-        return `细分领域${index + 1}: ${opt.title}
-
-${reasoningText}
-
-参考文献：
-${opt.references}
-
-${'='.repeat(60)}\n`
+        return formatSingleResearchOption(index) + `\n\n${'='.repeat(60)}\n`;
       })
       .join('\n')
   }
@@ -342,7 +366,7 @@ ${'='.repeat(60)}\n`
 
       case 'research':
         if (researchOptions.length > 0) {
-          return formatResearchOptionsForPreview()
+          return formatSingleResearchOption()
         }
         return '请点击"开始生成分析"获取调研结果。'
 
@@ -486,7 +510,13 @@ ${'='.repeat(60)}\n`
 
   const handleDownload = () => {
     // 生成包含所有数据的文件
-    const content = generatePreviewText()
+    let content = generatePreviewText()
+
+    // 如果是PS写作的调研阶段，下载所有调研结果
+    if (activeTool === 'ps-write' && workflowStep === 'research' && researchOptions.length > 0) {
+      content = formatAllResearchOptions()
+    }
+
     const blob = new Blob([content], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -731,6 +761,22 @@ ${'='.repeat(60)}\n`
                 预览
               </h2>
             </div>
+
+            {/* 调研结果标签页 */}
+            {activeTool === 'ps-write' && workflowStep === 'research' && researchOptions.length > 0 && (
+              <div className={styles.researchTabs}>
+                {researchOptions.sort((a, b) => b.matchScore - a.matchScore).map((opt, index) => (
+                  <button
+                    key={opt.id || index}
+                    className={`${styles.researchTab} ${activeResearchTab === index ? styles.active : ''}`}
+                    onClick={() => setActiveResearchTab(index)}
+                  >
+                    细分领域{index + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className={styles.previewContent}>
               <div className={styles.previewTextContainer}>
                 {isGenerating ? (
