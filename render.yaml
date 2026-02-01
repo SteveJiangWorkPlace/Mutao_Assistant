@@ -6,7 +6,7 @@ services:
     startCommand: python -m backend
     envVars:
       - key: PYTHON_VERSION
-        value: 3.13.4
+        value: 3.12.4
       - key: GEMINI_API_KEY
         sync: false
       - key: DEBUG
