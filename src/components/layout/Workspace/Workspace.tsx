@@ -736,9 +736,6 @@ ${'='.repeat(60)}\n`
                 {isGenerating ? (
                   <div className={styles.loadingDots}>
                     <div className={styles.dot}></div>
-                    <div className={styles.dot}></div>
-                    <div className={styles.dot}></div>
-                    <div className={styles.dot}></div>
                   </div>
                 ) : (
                   formatPreviewWithBoldTitles(generatePreviewText())
