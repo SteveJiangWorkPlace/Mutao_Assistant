@@ -7,3 +7,4 @@
 [build.environment]
   NODE_VERSION = "18"
   NODE_ENV = "production"
+  PYTHON_VERSION = ""  # 禁用Python安装，避免Netlify检测Python配置文件
