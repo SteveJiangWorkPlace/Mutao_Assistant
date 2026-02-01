@@ -322,6 +322,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
 
     // 按用户要求的格式：每个细分领域单独一行，小标题加粗，各部分之间换行
     // 注意：加粗效果由formatPreviewWithBoldTitles函数处理
+    // 技能匹配和参考文献之间增加一个空行
     return `细分领域${safeIndex + 1}: ${opt.title}
 
 趋势分析: ${reasoningText.includes('趋势分析:') ? reasoningText.split('趋势分析:')[1]?.split('痛点识别:')[0]?.trim() || '未提供' : '未提供'}
@@ -345,9 +346,10 @@ ${opt.references}`
     return researchOptions
       .sort((a, b) => b.matchScore - a.matchScore)
       .map((opt, index) => {
-        return formatSingleResearchOption(index) + `\n\n${'='.repeat(60)}\n`;
+        // 每个细分领域之间有两个空行（包括分隔线）
+        return `${formatSingleResearchOption(index)}\n\n${'='.repeat(60)}`;
       })
-      .join('\n')
+      .join('\n\n')
   }
 
   const generatePreviewText = (): string => {
