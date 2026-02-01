@@ -20,13 +20,13 @@ def parse_research_options(text: str) -> List[ResearchOption]:
     text = text.strip()
 
     # 按细分领域分割文本
-    # 使用正则表达式匹配【细分领域X: ...】格式
+    # 使用正则表达式匹配【细分领域X: ...】格式，可能包含匹配度
     pattern = r'【细分领域(\d+):\s*([^】]+)】'
     matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
-        # 尝试其他格式
-        pattern = r'细分领域(\d+):\s*([^\n]+)'
+        # 尝试其他格式，包含可能的匹配度信息
+        pattern = r'细分领域(\d+):\s*([^\n(]+)'
         matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
@@ -83,8 +83,13 @@ def parse_research_options(text: str) -> List[ResearchOption]:
 
 def parse_match_score(text: str) -> int:
     """解析匹配度"""
-    # 查找"匹配度: XX%"模式
+    # 查找"匹配度: XX%"模式，可能在括号内
     match = re.search(r'匹配度:\s*(\d+)%', text)
+    if match:
+        return int(match.group(1))
+
+    # 查找"(匹配度: XX%)"模式
+    match = re.search(r'\(匹配度:\s*(\d+)%\)', text)
     if match:
         return int(match.group(1))
 
@@ -98,29 +103,61 @@ def parse_match_score(text: str) -> int:
 
 def parse_summary(text: str) -> str:
     """解析一句话总结"""
-    # 查找"一句话总结:"后面的内容
     lines = text.split('\n')
+
+    # 查找包含"一句话总结:"的行
     for i, line in enumerate(lines):
-        if '一句话总结:' in line:
-            # 获取总结内容
-            summary = line.split('一句话总结:')[1].strip()
-            if summary:
-                return summary
+        stripped = line.strip()
+
+        # 检查"一句话总结:"模式
+        if '一句话总结:' in stripped:
+            # 获取冒号后的内容
+            if ':' in stripped:
+                summary = stripped.split(':', 1)[1].strip()
+                if summary:
+                    # 移除可能的bullet point符号
+                    summary = re.sub(r'^[•\-*]\s*', '', summary)
+                    return summary
+
             # 如果没有内容，尝试下一行
-            if i + 1 < len(lines) and lines[i + 1].strip():
-                return lines[i + 1].strip()
+            if i + 1 < len(lines):
+                next_line = lines[i + 1].strip()
+                if next_line:
+                    # 移除可能的bullet point符号
+                    next_line = re.sub(r'^[•\-*]\s*', '', next_line)
+                    return next_line
+
+        # 检查bullet point格式的总结
+        if stripped.startswith('•') and '一句话总结:' in stripped:
+            # 格式: "• 一句话总结: 内容"
+            summary_part = stripped.split(':', 1)[1].strip() if ':' in stripped else stripped[1:].strip()
+            return summary_part
+
+    # 查找单独的bullet point总结行
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith('•'):
+            # 检查前一行是否包含"一句话总结"
+            if i > 0 and '一句话总结:' in lines[i - 1]:
+                # 移除bullet point符号
+                summary = re.sub(r'^[•\-*]\s*', '', stripped)
+                return summary
 
     # 如果没有找到，尝试其他模式
     for line in lines:
-        if '总结:' in line and '详细理由' not in line:
-            summary = line.split('总结:')[1].strip()
+        stripped = line.strip()
+        if '总结:' in stripped and '详细理由' not in stripped:
+            summary = stripped.split('总结:')[1].strip()
             if summary:
+                summary = re.sub(r'^[•\-*]\s*', '', summary)
                 return summary
 
     # 返回第一行非空内容作为后备
     for line in lines:
         stripped = line.strip()
         if stripped and not stripped.startswith('匹配度') and not stripped.startswith('详细理由'):
+            # 移除可能的bullet point符号
+            stripped = re.sub(r'^[•\-*]\s*', '', stripped)
             return stripped[:200]  # 截断
 
     return "通过硕士学习专业知识来应对行业挑战"
@@ -132,45 +169,64 @@ def parse_reasoning(text: str) -> List[str]:
     # 查找"详细理由:"部分
     lines = text.split('\n')
     in_reasoning = False
-    current_reason = ""
+    current_item = ""
+    current_type = ""
 
     for line in lines:
         stripped = line.strip()
 
         if '详细理由:' in stripped:
             in_reasoning = True
-            # 提取冒号后的内容
-            if ':' in stripped:
-                after_colon = stripped.split(':', 1)[1].strip()
-                if after_colon:
-                    current_reason = after_colon
             continue
 
         if in_reasoning:
             # 检查是否到了参考文献部分
             if '参考文献:' in stripped or stripped.startswith('1.') or stripped.startswith('参考文献'):
+                # 添加最后一个项目
+                if current_item and current_type:
+                    reasoning.append(f"{current_type}: {current_item}")
                 break
 
-            # 检查是否是子标题（趋势分析、痛点识别等）
-            if '趋势分析:' in stripped or '痛点识别:' in stripped or '机会点:' in stripped or '技能匹配:' in stripped:
-                if current_reason:
-                    reasoning.append(current_reason)
-                current_reason = stripped
-            elif stripped:
-                if current_reason:
-                    current_reason += " " + stripped
-                else:
-                    current_reason = stripped
+            # 检查是否是bullet point子标题（趋势分析、痛点识别等）
+            bullet_match = re.match(r'^[•\-*]\s*(趋势分析|痛点识别|机会点|技能匹配):\s*(.*)', stripped)
+            if bullet_match:
+                # 保存前一个项目
+                if current_item and current_type:
+                    reasoning.append(f"{current_type}: {current_item}")
 
-    # 添加最后一个理由
-    if current_reason and in_reasoning:
-        reasoning.append(current_reason)
+                # 开始新项目
+                current_type = bullet_match.group(1)
+                current_item = bullet_match.group(2).strip()
+            elif stripped.startswith('•') or stripped.startswith('-') or stripped.startswith('*'):
+                # 通用的bullet point，追加到当前项目
+                if current_item:
+                    # 移除bullet point符号并添加内容
+                    bullet_content = re.sub(r'^[•\-*]\s*', '', stripped)
+                    if bullet_content:
+                        current_item += " " + bullet_content
+            elif stripped and not stripped.startswith('【细分领域'):
+                # 普通文本行，追加到当前项目
+                if current_item:
+                    current_item += " " + stripped
+                elif stripped:  # 如果没有当前项目但有关键词
+                    # 检查是否是没有bullet point的关键词行
+                    for keyword in ['趋势分析:', '痛点识别:', '机会点:', '技能匹配:']:
+                        if keyword in stripped:
+                            if current_item and current_type:
+                                reasoning.append(f"{current_type}: {current_item}")
+                            current_type = keyword.replace(':', '')
+                            current_item = stripped.split(':', 1)[1].strip() if ':' in stripped else stripped
+                            break
+
+    # 添加最后一个项目
+    if current_item and current_type:
+        reasoning.append(f"{current_type}: {current_item}")
 
     # 如果没有找到详细理由，使用一些默认内容
     if not reasoning:
         reasoning = [
-            "行业趋势分析显示该领域有快速增长",
-            "申请者的经历与领域需求高度匹配"
+            "趋势分析: 行业趋势分析显示该领域有快速增长",
+            "技能匹配: 申请者的经历与领域需求高度匹配"
         ]
 
     return reasoning
@@ -464,13 +520,13 @@ def parse_research_options_with_domain_texts(text: str) -> Tuple[List[ResearchOp
     text = text.strip()
 
     # 按细分领域分割文本
-    # 使用正则表达式匹配【细分领域X: ...】格式
+    # 使用正则表达式匹配【细分领域X: ...】格式，可能包含匹配度
     pattern = r'【细分领域(\d+):\s*([^】]+)】'
     matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
-        # 尝试其他格式
-        pattern = r'细分领域(\d+):\s*([^\n]+)'
+        # 尝试其他格式，包含可能的匹配度信息
+        pattern = r'细分领域(\d+):\s*([^\n(]+)'
         matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:

@@ -120,8 +120,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-2);
-  padding-bottom: var(--spacing-2);
+  margin-bottom: var(--spacing-1);
+  padding-bottom: var(--spacing-1);
   /* border-bottom: 1px solid var(--color-border); */
 }
 
@@ -185,10 +185,55 @@
   background-color: var(--color-surface);
   border: none;
   border-radius: var(--radius-md);
-  padding: var(--spacing-4);
+  padding: var(--spacing-2);
   min-height: 0; /* Allow it to shrink */
+  /* 改善滚动条样式 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-400) var(--color-gray-100);
 }
 
+.previewContent::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.previewContent::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+  border-radius: 4px;
+}
+
+.previewContent::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+  border-radius: 4px;
+}
+
+.previewContent::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+.previewTextContainer {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  height: 100%;
+  min-height: 0;
+}
+
+.previewTextFormatted {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}
+
+/* 保持向后兼容 */
 .previewText {
   margin: 0;
   white-space: pre-wrap;
@@ -376,6 +421,37 @@
 .stepSeparator {
   margin: 0 var(--spacing-1);
   color: var(--color-text-tertiary);
+}
+
+/* 可拖动的分隔条样式 */
+.dividerBar {
+  width: 8px;
+  min-width: 8px;
+  background-color: var(--color-border);
+  cursor: col-resize;
+  transition: background-color var(--transition-fast);
+  position: relative;
+}
+
+.dividerBar:hover {
+  background-color: var(--color-primary);
+}
+
+.dividerBar::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  background-color: var(--color-text-tertiary);
+  border-radius: 1px;
+}
+
+.dividerBar:active,
+.dividerBar.dragging {
+  background-color: var(--color-primary);
 }
 
 

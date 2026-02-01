@@ -36,6 +36,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
 }) => {
   const [text, setText] = useState('')
   const [splitRatio, setSplitRatio] = useState(65) // 65% editor, 35% preview
+  const [isDragging, setIsDragging] = useState(false)
 
   // PS写作模块专用状态
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
@@ -348,9 +349,90 @@ ${'='.repeat(60)}\n`
     }
   }
 
+  // 格式化预览文本，对细分领域标题加粗
+  const formatPreviewWithBoldTitles = (text: string): React.ReactNode => {
+    if (!text) return text;
+
+    // 使用正则表达式匹配细分领域标题格式
+    // 匹配格式：【细分领域X: 标题内容】 或 细分领域X: 标题内容
+    const titleRegex = /(【细分领域\d+:\s*[^】]+】|细分领域\d+:\s*[^\n(]+)/g;
+
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = titleRegex.exec(text)) !== null) {
+      // 添加匹配前的文本
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+
+      // 添加加粗的标题
+      parts.push(
+        <span key={match.index} style={{ fontWeight: 'bold' }}>
+          {match[0]}
+        </span>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // 添加剩余文本
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    // 如果没有匹配到标题，返回原始文本
+    if (parts.length === 0) {
+      return text;
+    }
+
+    return (
+      <div className={styles.previewTextFormatted}>
+        {parts.map((part, index) => (
+          <React.Fragment key={index}>{part}</React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
   const handleSplitRatioChange = (ratio: number) => {
     setSplitRatio(ratio)
   }
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    e.preventDefault()
+  }
+
+  const handleDrag = (e: MouseEvent) => {
+    if (!isDragging) return
+
+    const workspaceElement = document.querySelector(`.${styles.content}`) as HTMLElement
+    if (!workspaceElement) return
+
+    const rect = workspaceElement.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const ratio = Math.min(Math.max((x / rect.width) * 100, 10), 90) // 限制在10%-90%之间
+
+    setSplitRatio(ratio)
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+  }
+
+  // 添加全局鼠标事件监听
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDrag)
+      document.addEventListener('mouseup', handleDragEnd)
+      return () => {
+        document.removeEventListener('mousemove', handleDrag)
+        document.removeEventListener('mouseup', handleDragEnd)
+      }
+    }
+  }, [isDragging])
 
   const handleSave = () => {
     // 保存所有数据
@@ -605,6 +687,15 @@ ${'='.repeat(60)}\n`
           )}
         </div>
 
+        {/* 可拖动的分隔条 */}
+        {splitRatio !== 0 && splitRatio !== 100 && (
+          <div
+            className={styles.dividerBar}
+            onMouseDown={handleDragStart}
+            style={{ cursor: isDragging ? 'col-resize' : 'col-resize' }}
+          />
+        )}
+
         <div
           className={styles.previewSection}
           style={{
@@ -620,7 +711,9 @@ ${'='.repeat(60)}\n`
               </h2>
             </div>
             <div className={styles.previewContent}>
-              <pre className={styles.previewText}>{generatePreviewText()}</pre>
+              <div className={styles.previewTextContainer}>
+                {formatPreviewWithBoldTitles(generatePreviewText())}
+              </div>
             </div>
           </Card>
         </div>
