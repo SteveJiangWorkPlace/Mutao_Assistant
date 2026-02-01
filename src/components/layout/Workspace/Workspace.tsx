@@ -403,6 +403,12 @@ ${'='.repeat(60)}\n`
   const handleDragStart = (e: React.MouseEvent) => {
     setIsDragging(true)
     e.preventDefault()
+
+    // 防止文本选择，设置拖动光标
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+    document.body.style.webkitUserSelect = 'none'
+    document.body.style.msUserSelect = 'none'
   }
 
   const handleDrag = (e: MouseEvent) => {
@@ -420,6 +426,12 @@ ${'='.repeat(60)}\n`
 
   const handleDragEnd = () => {
     setIsDragging(false)
+
+    // 恢复光标和用户选择
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+    document.body.style.webkitUserSelect = ''
+    document.body.style.msUserSelect = ''
   }
 
   // 添加全局鼠标事件监听

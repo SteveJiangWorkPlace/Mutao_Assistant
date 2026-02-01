@@ -425,12 +425,19 @@
 
 /* 可拖动的分隔条样式 */
 .dividerBar {
-  width: 8px;
-  min-width: 8px;
+  width: 2px;
+  min-width: 2px;
   background-color: var(--color-border);
   cursor: col-resize;
   transition: background-color var(--transition-fast);
   position: relative;
+  /* 增加可点击区域但保持视觉宽度 */
+  padding: 16px 3px;
+  margin: 0 -3px;
+  /* 确保内容居中 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .dividerBar:hover {
