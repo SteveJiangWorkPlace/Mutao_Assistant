@@ -305,13 +305,21 @@ const Workspace: React.FC<WorkspaceProps> = ({
     return researchOptions
       .sort((a, b) => b.matchScore - a.matchScore)
       .map((opt, index) => {
-        return `选项 ${index + 1}：【${opt.title}】
-匹配度：${opt.matchScore}%
-简要描述：${opt.description}
+        // 处理reasoning，可能是字符串或字符串数组
+        let reasoningText = opt.reasoning;
+        if (Array.isArray(reasoningText)) {
+          reasoningText = reasoningText.join('\n');
+        }
 
-详细理由：${opt.reasoning}
+        // 移除“详细理由：”前缀（如果存在）
+        reasoningText = reasoningText.replace(/^详细理由：\s*/, '');
 
-参考文献：${opt.references}
+        return `细分领域${index + 1}: ${opt.title}
+
+${reasoningText}
+
+参考文献：
+${opt.references}
 
 ${'='.repeat(60)}\n`
       })
@@ -349,25 +357,26 @@ ${'='.repeat(60)}\n`
     }
   }
 
-  // 格式化预览文本，对细分领域标题加粗
+  // 格式化预览文本，对标题和关键部分加粗
   const formatPreviewWithBoldTitles = (text: string): React.ReactNode => {
     if (!text) return text;
 
-    // 使用正则表达式匹配细分领域标题格式
-    // 匹配格式：【细分领域X: 标题内容】 或 细分领域X: 标题内容
-    const titleRegex = /(【细分领域\d+:\s*[^】]+】|细分领域\d+:\s*[^\n(]+)/g;
+    // 使用正则表达式匹配需要加粗的部分：
+    // 1. 细分领域标题（带或不带方括号）
+    // 2. 小标题：趋势分析、痛点识别、机会点、技能匹配、参考文献
+    const boldRegex = /(【细分领域\d+:\s*[^】]+】|细分领域\d+:\s*[^\n(]+|趋势分析:|痛点识别:|机会点:|技能匹配:|参考文献:)/g;
 
     const parts = [];
     let lastIndex = 0;
     let match;
 
-    while ((match = titleRegex.exec(text)) !== null) {
+    while ((match = boldRegex.exec(text)) !== null) {
       // 添加匹配前的文本
       if (match.index > lastIndex) {
         parts.push(text.substring(lastIndex, match.index));
       }
 
-      // 添加加粗的标题
+      // 添加加粗的部分
       parts.push(
         <span key={match.index} style={{ fontWeight: 'bold' }}>
           {match[0]}
@@ -382,7 +391,7 @@ ${'='.repeat(60)}\n`
       parts.push(text.substring(lastIndex));
     }
 
-    // 如果没有匹配到标题，返回原始文本
+    // 如果没有匹配到任何部分，返回原始文本
     if (parts.length === 0) {
       return text;
     }
@@ -724,7 +733,16 @@ ${'='.repeat(60)}\n`
             </div>
             <div className={styles.previewContent}>
               <div className={styles.previewTextContainer}>
-                {formatPreviewWithBoldTitles(generatePreviewText())}
+                {isGenerating ? (
+                  <div className={styles.loadingDots}>
+                    <div className={styles.dot}></div>
+                    <div className={styles.dot}></div>
+                    <div className={styles.dot}></div>
+                    <div className={styles.dot}></div>
+                  </div>
+                ) : (
+                  formatPreviewWithBoldTitles(generatePreviewText())
+                )}
               </div>
             </div>
           </Card>

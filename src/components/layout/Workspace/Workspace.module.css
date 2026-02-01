@@ -221,6 +221,8 @@
   color: var(--color-text-primary);
   height: 100%;
   min-height: 0;
+  overflow-y: auto;
+  position: relative;
 }
 
 .previewTextFormatted {
@@ -229,7 +231,7 @@
   word-wrap: break-word;
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
-  line-height: var(--line-height-normal);
+  line-height: 2pt;
   color: var(--color-text-primary);
 }
 
@@ -459,6 +461,64 @@
 .dividerBar:active,
 .dividerBar.dragging {
   background-color: var(--color-primary);
+}
+
+/* 加载动画 - 圆形闪烁点 */
+.loadingDots {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+}
+
+.dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+.dot:nth-child(1) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  animation-delay: 0.375s;
+}
+
+.dot:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0.75s;
+}
+
+.dot:nth-child(4) {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  animation-delay: 1.125s;
+}
+
+@keyframes dot-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 

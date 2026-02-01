@@ -20,13 +20,13 @@ def parse_research_options(text: str) -> List[ResearchOption]:
     text = text.strip()
 
     # 按细分领域分割文本
-    # 使用正则表达式匹配【细分领域X: ...】格式，可能包含匹配度
-    pattern = r'【细分领域(\d+):\s*([^】]+)】'
+    # 使用正则表达式匹配细分领域X: ...格式（不带方括号）
+    pattern = r'细分领域(\d+):\s*([^\n(]+)'
     matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
-        # 尝试其他格式，包含可能的匹配度信息
-        pattern = r'细分领域(\d+):\s*([^\n(]+)'
+        # 尝试带方括号的格式作为后备
+        pattern = r'【细分领域(\d+):\s*([^】]+)】'
         matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
@@ -204,7 +204,7 @@ def parse_reasoning(text: str) -> List[str]:
                     bullet_content = re.sub(r'^[•\-*]\s*', '', stripped)
                     if bullet_content:
                         current_item += " " + bullet_content
-            elif stripped and not stripped.startswith('【细分领域'):
+            elif stripped and not stripped.startswith('细分领域'):
                 # 普通文本行，追加到当前项目
                 if current_item:
                     current_item += " " + stripped
@@ -248,7 +248,7 @@ def parse_references(text: str) -> List[str]:
 
         if in_references:
             # 检查是否到了下一个细分领域或结束
-            if stripped.startswith('【细分领域') or stripped.startswith('细分领域'):
+            if stripped.startswith('细分领域'):
                 break
 
             # 跳过空行
@@ -520,13 +520,13 @@ def parse_research_options_with_domain_texts(text: str) -> Tuple[List[ResearchOp
     text = text.strip()
 
     # 按细分领域分割文本
-    # 使用正则表达式匹配【细分领域X: ...】格式，可能包含匹配度
-    pattern = r'【细分领域(\d+):\s*([^】]+)】'
+    # 使用正则表达式匹配细分领域X: ...格式（不带方括号）
+    pattern = r'细分领域(\d+):\s*([^\n(]+)'
     matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
-        # 尝试其他格式，包含可能的匹配度信息
-        pattern = r'细分领域(\d+):\s*([^\n(]+)'
+        # 尝试带方括号的格式作为后备
+        pattern = r'【细分领域(\d+):\s*([^】]+)】'
         matches = list(re.finditer(pattern, text))
 
     if len(matches) < 3:
