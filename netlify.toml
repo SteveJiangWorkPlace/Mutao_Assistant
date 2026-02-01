@@ -2,24 +2,8 @@
   publish = "dist"
   command = "npm run build"
   installCommand = "npm install"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
   NODE_ENV = "production"
-
-[context.production.environment]
-  VITE_API_BASE_URL = "https://mutao-assistant-api.onrender.com"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'"
