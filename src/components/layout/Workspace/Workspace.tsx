@@ -557,16 +557,6 @@ ${opt.references}`
           <h1 className={styles.title}>{getToolTitle()}</h1>
           <p className={styles.description}>{getToolDescription()}</p>
 
-          {/* 简单步骤指示器（阶段二测试用） */}
-          {activeTool === 'ps-write' && (
-            <div className={styles.workflowIndicator}>
-              <span className={`${styles.stepDot} ${workflowStep === 'input' ? styles.active : ''}`}>信息输入</span>
-              <span className={styles.stepSeparator}>→</span>
-              <span className={`${styles.stepDot} ${workflowStep === 'research' ? styles.active : ''}`}>调研选择</span>
-              <span className={styles.stepSeparator}>→</span>
-              <span className={`${styles.stepDot} ${workflowStep === 'statement' ? styles.active : ''}`}>个人陈述</span>
-            </div>
-          )}
         </div>
 
         <div className={styles.buttonGroups}>

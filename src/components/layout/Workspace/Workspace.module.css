@@ -398,34 +398,6 @@
   }
 }
 
-/* 工作流指示器样式（阶段二） */
-.workflowIndicator {
-  display: flex;
-  align-items: center;
-  margin-top: var(--spacing-2);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  flex-wrap: wrap;
-  gap: var(--spacing-1);
-}
-
-.stepDot {
-  padding: var(--spacing-1) var(--spacing-2);
-  border-radius: var(--border-radius-md);
-  background-color: var(--color-surface-variant);
-  transition: all var(--transition-fast);
-}
-
-.stepDot.active {
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  font-weight: var(--font-weight-medium);
-}
-
-.stepSeparator {
-  margin: 0 var(--spacing-1);
-  color: var(--color-text-tertiary);
-}
 
 /* 可拖动的分隔条样式 */
 .dividerBar {
