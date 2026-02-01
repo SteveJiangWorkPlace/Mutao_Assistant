@@ -111,7 +111,7 @@ const Workspace: React.FC<WorkspaceProps> = ({
   const callGeminiAPI = async () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
-      console.log(`调用后端API: ${apiBaseUrl}/api/gemini/generate`)
+      console.log(`调用后端API: ${apiBaseUrl}/api/gemini/ps-write/generate`)
 
       const response = await fetch(`${apiBaseUrl}/api/gemini/ps-write/generate`, {
         method: 'POST',
