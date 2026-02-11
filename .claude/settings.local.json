@@ -32,7 +32,20 @@
       "Bash(echo:*)",
       "Bash(pip show:*)",
       "Bash(xargs ls:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(cd:*)",
+      "Bash(node:*)",
+      "Bash(install.bat:*)",
+      "Bash(cmd /c:*)",
+      "Bash(venvScriptspython:*)",
+      "Bash(venv/Scripts/python.exe -m pip install:*)",
+      "Bash(copy:*)",
+      "Bash(venv/Scripts/python.exe:*)",
+      "Bash(venv/Scripts/pip.exe list:*)",
+      "Bash(venv/Scripts/pip.exe install:*)",
+      "Bash(backend/venv/Scripts/python.exe:*)",
+      "Bash(powershell:*)",
+      "Bash(venv/Scripts/pip.exe uninstall:*)"
     ]
   },
   "hooks": {

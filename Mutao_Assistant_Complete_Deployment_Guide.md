@@ -71,7 +71,7 @@ python -m venv venv
 venv\Scripts\activate
 
 # 安装依赖
-pip install fastapi uvicorn google-generativeai pydantic python-dotenv pydantic-settings
+pip install fastapi uvicorn google-genai pydantic python-dotenv pydantic-settings
 
 # 启动开发服务器
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
@@ -211,7 +211,7 @@ class PersonalStatement(BaseModel):
 
 ### 2. Gemini服务封装 (services/gemini.py)
 ```python
-import google.generativeai as genai
+import google.genai as genai
 import os
 import asyncio
 from typing import AsyncGenerator
@@ -497,7 +497,7 @@ services:
 ```txt
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-google-generativeai==0.3.2
+google-genai==1.62.0
 pydantic==2.5.0
 python-dotenv==1.0.0
 pydantic-settings==2.1.0

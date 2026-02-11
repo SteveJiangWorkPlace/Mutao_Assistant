@@ -1,4 +1,4 @@
-import google.generativeai as genai
+import google.genai as genai
 import asyncio
 import sys
 from typing import Optional
@@ -15,14 +15,12 @@ class GeminiService:
 
         # 配置Gemini
         sys.stderr.write(f"[DEBUG] 配置genai，api_key长度: {len(api_key)}\n")
-        genai.configure(api_key=api_key)
-        sys.stderr.write("[DEBUG] genai.configure完成\n")
+        self.client = genai.Client(api_key=api_key)
+        sys.stderr.write("[DEBUG] genai.Client创建完成\n")
 
         # 使用指定的模型
         self.model_name = 'gemini-2.5-pro'  # 强制使用2.5-pro模型，需要API权限
         sys.stderr.write(f"[DEBUG] GeminiService初始化，模型名称: {self.model_name}\n")
-        self.model = genai.GenerativeModel(self.model_name)
-        sys.stderr.write(f"[DEBUG] GenerativeModel创建成功，模型: {self.model_name}\n")
 
         # 重试配置
         self.max_retries = 3
@@ -49,7 +47,7 @@ class GeminiService:
             try:
                 sys.stderr.write(f"[DEBUG] 尝试 {attempt+1}/{max_retries+1}: 调用generate_content_async\n")
                 # 使用异步生成内容
-                response = await self.model.generate_content_async(prompt)
+                response = await self.client.aio.models.generate_content(model=self.model_name, contents=prompt)
                 sys.stderr.write(f"[DEBUG] 生成成功，响应长度: {len(response.text)}\n")
                 return response.text
             except Exception as e:
